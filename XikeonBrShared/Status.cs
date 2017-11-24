@@ -8,6 +8,6 @@ namespace XikeonBrShared
 {
     public static class Status
     {
-        public static bool gameStarted = true;
+        public static bool gameStarted = false;
     }
 }

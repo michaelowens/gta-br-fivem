@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CitizenFX.Core;
 using static CitizenFX.Core.Native.API;
 using System.Dynamic;
+using XikeonBrClient.Managers;
 
 namespace XikeonBrClient
 {
@@ -18,12 +19,22 @@ namespace XikeonBrClient
         {
             Debug.WriteLine("XikeonBrClient initialized");
             Tick += OnTick;
+            EventHandlers.Add("onClientMapStart", new Action<string>(OnClientMapStart));
             EventHandlers.Add("sendMotd", new Action<string>(ReceivedMotd));
             EventHandlers.Add("playerSpawned", new Action<Player, System.Object, CallbackDelegate>(OnPlayerSpawned));
             EventHandlers.Add("xbr:showNotification", new Action<string>(Notification.OnNotification));
             EventHandlers.Add("xbr:showNotificationDetails", new Action<string, string, string, string>(Notification.OnNotificationDetails));
             EventHandlers.Add("xbr:showNotificationDetailsPlayer", new Action<ExpandoObject, string, string, string, string>(Notification.OnNotificationDetails));
             EventHandlers.Add("xbr:setTime", new Action<int, int, int>(OnSetTime));
+            EventHandlers.Add("getMapDirectives", new Action<CallbackDelegate>(SpawnManager.OnGetMapDirectives));
+        }
+
+        private void OnClientMapStart(string resourceName)
+        {
+            Debug.WriteLine("onClientMapStart: {0}", resourceName);
+            //Exports["spawnmanager"].setAutoSpawn(false);
+            //Exports["spawnmanager"].spawnPlayer(false);
+            SpawnManager.SpawnPlayer();
         }
 
         private async Task OnTick()

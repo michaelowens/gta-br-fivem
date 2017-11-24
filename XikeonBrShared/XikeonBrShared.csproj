@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\</OutputPath>
+    <OutputPath>..\..\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Status.cs" />
     <Compile Include="Time.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="XikeonBrShared.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
