@@ -7,6 +7,7 @@ using CitizenFX.Core;
 using static CitizenFX.Core.Native.API;
 using System.Dynamic;
 using XikeonBrClient.Managers;
+using CitizenFX.Core.UI;
 
 namespace XikeonBrClient
 {
@@ -20,14 +21,15 @@ namespace XikeonBrClient
             Debug.WriteLine("XikeonBrClient initialized");
             Tick += OnTick;
             EventHandlers.Add("onClientMapStart", new Action<string>(OnClientMapStart));
+            EventHandlers.Add("getMapDirectives", new Action<CallbackDelegate>(SpawnManager.OnGetMapDirectives));
             EventHandlers.Add("sendMotd", new Action<string>(ReceivedMotd));
-            EventHandlers.Add("playerSpawned", new Action<Player, System.Object, CallbackDelegate>(OnPlayerSpawned));
+            EventHandlers.Add("playerSpawned", new Action<Player, Object, CallbackDelegate>(OnPlayerSpawned));
             EventHandlers.Add("xbr:showNotification", new Action<string>(Notification.OnNotification));
             EventHandlers.Add("xbr:showNotificationDetails", new Action<string, string, string, string>(Notification.OnNotificationDetails));
             EventHandlers.Add("xbr:showNotificationDetailsPlayer", new Action<ExpandoObject, string, string, string, string>(Notification.OnNotificationDetails));
             EventHandlers.Add("xbr:setTime", new Action<int, int, int>(OnSetTime));
             EventHandlers.Add("xbr:freezePlayer", new Action<int, bool>(OnFreezePlayer));
-            EventHandlers.Add("getMapDirectives", new Action<CallbackDelegate>(SpawnManager.OnGetMapDirectives));
+            EventHandlers.Add("xbr:onPlayerDied", new Action<int, double, double, double>(OnPlayerDied));
         }
 
         private void OnClientMapStart(string resourceName)
@@ -59,7 +61,7 @@ namespace XikeonBrClient
             SpawnManager.FreezePlayer(player, freeze);
         }
 
-        private void OnPlayerSpawned([FromSource]Player player, System.Object playerName, CallbackDelegate kickReason)
+        private void OnPlayerSpawned([FromSource]Player player, Object playerName, CallbackDelegate kickReason)
         {
             if (firstSpawn)
             {

@@ -46,6 +46,7 @@
     <Compile Include="Managers\SpawnManager.cs" />
     <Compile Include="Models\SpawnPoint.cs" />
     <Compile Include="Notification.cs" />
+    <Compile Include="System\BaseEvents.cs" />
     <Compile Include="XikeonBrClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -55,5 +56,6 @@
       <Name>XikeonBrShared</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
