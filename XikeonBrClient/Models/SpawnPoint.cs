@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace XikeonBrClient.Models
 {
-    class SpawnPoint
+    public class SpawnPoint
     {
         public int Idx { get; set; }
         public double X { get; set; }

@@ -12,13 +12,20 @@ using CitizenFX.Core.UI;
 
 namespace XikeonBrClient.Managers
 {
-    static class SpawnManager
+    public class SpawnManager
     {
         static Random rnd = new Random();
         static bool spawnLock = false;
-        private static List<SpawnPoint> spawnpoints = new List<SpawnPoint>();
+        private List<SpawnPoint> spawnpoints = new List<SpawnPoint>();
 
-        public static void OnGetMapDirectives(CallbackDelegate add)
+        public SpawnManager()
+        {
+
+        }
+
+        public async Task OnTick() { }
+
+        public void OnGetMapDirectives(CallbackDelegate add)
         {
             Debug.WriteLine("OnGetMapDirectives: add spawnpoint");
 
@@ -113,7 +120,7 @@ namespace XikeonBrClient.Managers
             add("spawnpoint", OnSpawnpoint, removeCB);
         }
 
-        public static int AddSpawnPoint(SpawnPoint sp) {
+        public int AddSpawnPoint(SpawnPoint sp) {
             if (!IsModelInCdimage((uint)sp.Model))
             {
                 Debug.WriteLine("Model not found in cd image: {0}", sp.Model);
@@ -127,7 +134,7 @@ namespace XikeonBrClient.Managers
             return sp.Idx;
         }
 
-        public static void FreezePlayer(int id, bool freeze)
+        public void FreezePlayer(int id, bool freeze)
         {
             Debug.WriteLine("Freezing player: {0}", freeze);
             //SetPlayerControl(id, !freeze, 0); // Camera looking around
@@ -154,12 +161,12 @@ namespace XikeonBrClient.Managers
             }
         }
 
-        public static void SpawnPlayer()
+        public void SpawnPlayer()
         {
             SpawnPlayer(rnd.Next(spawnpoints.Count));
         }
 
-        public static async void SpawnPlayer(int spawnIdx)
+        public async void SpawnPlayer(int spawnIdx)
         {
             if (spawnLock)
             {

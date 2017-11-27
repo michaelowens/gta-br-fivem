@@ -8,6 +8,7 @@ using static CitizenFX.Core.Native.API;
 using System.Dynamic;
 using XikeonBrClient.Managers;
 using CitizenFX.Core.UI;
+using XikeonBrClient.System;
 
 namespace XikeonBrClient
 {
@@ -16,12 +17,22 @@ namespace XikeonBrClient
         bool firstSpawn = true;
         bool playerInLobby = false;
 
+        SpawnManager spawnManager;
+        BaseEvents baseEvents;
+
         public XikeonBrClient()
         {
             Debug.WriteLine("XikeonBrClient initialized");
+
+            baseEvents = new BaseEvents();
+            Tick += baseEvents.OnTick;
+
+            spawnManager = new SpawnManager();
+            Tick += spawnManager.OnTick;
+            EventHandlers.Add("getMapDirectives", new Action<CallbackDelegate>(spawnManager.OnGetMapDirectives));
+
             Tick += OnTick;
             EventHandlers.Add("onClientMapStart", new Action<string>(OnClientMapStart));
-            EventHandlers.Add("getMapDirectives", new Action<CallbackDelegate>(SpawnManager.OnGetMapDirectives));
             EventHandlers.Add("sendMotd", new Action<string>(ReceivedMotd));
             EventHandlers.Add("playerSpawned", new Action<Player, Object, CallbackDelegate>(OnPlayerSpawned));
             EventHandlers.Add("xbr:showNotification", new Action<string>(Notification.OnNotification));
@@ -29,7 +40,8 @@ namespace XikeonBrClient
             EventHandlers.Add("xbr:showNotificationDetailsPlayer", new Action<ExpandoObject, string, string, string, string>(Notification.OnNotificationDetails));
             EventHandlers.Add("xbr:setTime", new Action<int, int, int>(OnSetTime));
             EventHandlers.Add("xbr:freezePlayer", new Action<int, bool>(OnFreezePlayer));
-            EventHandlers.Add("xbr:onPlayerDied", new Action<int, double, double, double>(OnPlayerDied));
+            EventHandlers.Add("xbr:playerRestart", new Action(OnPlayerRestart));
+            // EventHandlers.Add("xbr:onPlayerDied", new Action<int, double, double, double>(OnPlayerDied));
         }
 
         private void OnClientMapStart(string resourceName)
@@ -37,7 +49,7 @@ namespace XikeonBrClient
             Debug.WriteLine("onClientMapStart: {0}", resourceName);
             //Exports["spawnmanager"].setAutoSpawn(false);
             //Exports["spawnmanager"].spawnPlayer(false);
-            SpawnManager.SpawnPlayer();
+            spawnManager.SpawnPlayer();
         }
 
         private async Task OnTick()
@@ -58,11 +70,20 @@ namespace XikeonBrClient
 
         private void OnFreezePlayer(int player, bool freeze)
         {
-            SpawnManager.FreezePlayer(player, freeze);
+            spawnManager.FreezePlayer(player, freeze);
+        }
+
+        private void OnPlayerRestart()
+        {
+            Debug.WriteLine("restarting player");
+            spawnManager.SpawnPlayer();
         }
 
         private void OnPlayerSpawned([FromSource]Player player, Object playerName, CallbackDelegate kickReason)
         {
+            baseEvents.IsDead = false;
+            baseEvents.PlayerSpawned = true;
+
             if (firstSpawn)
             {
                 firstSpawn = false;
