@@ -18,21 +18,17 @@ namespace XikeonBrClient.Managers
         static bool spawnLock = false;
         private static List<SpawnPoint> spawnpoints = new List<SpawnPoint>();
 
-        //public SpawnManager()
-        //{
-        //    EventHandlers.Add("getMapDirectives", new Action<CallbackDelegate>(OnGetMapDirectives));
-        //}
-
         public static void OnGetMapDirectives(CallbackDelegate add)
         {
             Debug.WriteLine("OnGetMapDirectives: add spawnpoint");
 
-            Func<ExpandoObject, string, Action<ExpandoObject>> OnSpawnpoint = (state, model) =>
+            Func<dynamic, string, Action<dynamic>> OnSpawnpoint = (state, model) =>
             {
                 Debug.WriteLine("OnSpawnpoint: add point");
 
-                return new Action<ExpandoObject>(opts =>
+                return new Action<dynamic>(opts =>
                 {
+                    Debug.WriteLine("OnSpawnpoint: Add point2");
                     IDictionary<string, object> optsDict = opts;
                     string s = XikeonBrShared.Utils.ExpandoObjectToString(opts);
 
@@ -43,12 +39,12 @@ namespace XikeonBrClient.Managers
 
                         if (optsDict.ContainsKey("x"))
                         {
-                            Debug.WriteLine("SpawnManager: using x/y/z");
                             x = (double)optsDict["x"];
                             y = (double)optsDict["y"];
                             z = (double)optsDict["z"];
                         } else {
-                            Debug.WriteLine("SpawnManager: using 0/1/2");
+                            // Debug.WriteLine("SpawnManager: using 0/1/2");
+                            // TODO: test if this is being used/works
                             x = (double)optsDict.ElementAt(0).Value;
                             y = (double)optsDict.ElementAt(1).Value;
                             z = (double)optsDict.ElementAt(2).Value;
@@ -64,7 +60,7 @@ namespace XikeonBrClient.Managers
                         }
 
                         // recalculate the model for storage
-                        //if (not is number model)
+                        // TODO: if (not is number model)
                         modelKey = GetHashKey(model);
 
                         AddSpawnPoint(new SpawnPoint
@@ -76,34 +72,42 @@ namespace XikeonBrClient.Managers
                             Model = modelKey
                         });
 
-                        Debug.WriteLine("Adding spawn point: {0},{1},{2}", x,y,z);
-                        Debug.WriteLine("Original state object: {0}", XikeonBrShared.Utils.ExpandoObjectToString(state));
+                        //state = new ExpandoObject();
 
-                        IDictionary<string, Object> stateDict = state as IDictionary<string, Object>;
+                        //IDictionary<string, Object> stateDict = state;
 
-                        stateDict.Add("x", x);
+                        state.x = x;
+                        state.y = y;
+                        state.z = z;
+                        state.model = modelKey;
+
+                        Debug.WriteLine("Saved state: {0}", XikeonBrShared.Utils.ExpandoObjectToString(state));
+
+                        /*stateDict.Add("x", x);
                         stateDict.Add("y", y);
                         stateDict.Add("z", z);
-                        stateDict.Add("model", modelKey);
-
-                        Debug.WriteLine("Updated state object: {0}", XikeonBrShared.Utils.ExpandoObjectToString(state));
+                        stateDict.Add("model", modelKey);*/
                     }
                     catch (Exception e)
                     {
-                        Debug.WriteLine(e.ToString());
+                        Debug.WriteLine("OnSpawnpoint: Add point2 - error: ", e.ToString());
                         throw;
                     }
-
-                    //state.add("key", opts);
                 });
             };
 
-            Action<dynamic> removeCB = (state) =>
+            Action<ExpandoObject> removeCB = (state) =>
             {
-                IDictionary<string, Object> stateDict = state as IDictionary<string, Object>;
+                // TODO: this is broken and crashes
+                /*Debug.WriteLine("SpawnManager: removeCB");
+                Debug.WriteLine(XikeonBrShared.Utils.ExpandoObjectToString(state));
+                IDictionary<string, Object> stateDict = state;
+                Debug.WriteLine("SpawnManager: removeCB - stateDict: {0}", stateDict);
+                Debug.WriteLine("SpawnManager: removeCB - stateDict.x: {0}", stateDict["x"]);*/
 
-                Debug.WriteLine("removing key {0}", state.key);
+                //Debug.WriteLine("removing key {0}", state.key);
                 // loop over spawnpoints, remove where x,y,z&model match and return (early exit loop? can only be 1)
+                //spawnpoints.RemoveAll(sp => sp.X == (double)stateDict["x"] && sp.Y == (double)stateDict["y"] && sp.Z == (double)stateDict["z"] && sp.Model == (int)stateDict["model"]);
             };
 
             add("spawnpoint", OnSpawnpoint, removeCB);
@@ -121,6 +125,33 @@ namespace XikeonBrClient.Managers
             Debug.WriteLine("Spawnpoint added: {0}", sp.Idx);
 
             return sp.Idx;
+        }
+
+        public static void FreezePlayer(int id, bool freeze)
+        {
+            Debug.WriteLine("Freezing player: {0}", freeze);
+            //SetPlayerControl(id, !freeze, 0); // Camera looking around
+            Game.Player.CanControlCharacter = !freeze;
+            int ped = GetPlayerPed(id);
+
+            if (!IsEntityVisible(ped))
+            {
+                SetEntityVisible(ped, !freeze, false); // TODO: check 3rd param
+            }
+
+            if (!IsPedInAnyVehicle(ped, false)) // || freeze? - TODO: check 2nd param
+            {
+                SetEntityCollision(ped, !freeze, true); // TODO: check 3rd param
+            }
+
+            FreezeEntityPosition(ped, freeze);
+            // SetCharNeverTargeted(ped, true)
+            SetPlayerInvincible(ped, freeze);
+
+            if (!IsPedFatallyInjured(ped) && freeze)
+            {
+                ClearPedTasksImmediately(ped);
+            }
         }
 
         public static void SpawnPlayer()
@@ -149,80 +180,48 @@ namespace XikeonBrClient.Managers
             }
 
             SpawnPoint sp = spawnpoints.ElementAt(spawnIdx);
-            Debug.WriteLine("Got spawnpoint: {0}", sp.Idx);
 
-            // freeze player
-                
-            // change the player model
-            Debug.WriteLine("Request model: {0}, uint: {1}", sp.Model, (uint)sp.Model);
-            //RequestModel((uint)sp.Model);
-            //Model m = new Model(sp.Model);
-            Model m = new Model(sp.Model);
-            Debug.WriteLine("Fetched model: {0}", m);
-            await Game.Player.ChangeModel(m);
-            Debug.WriteLine("Changed model");
-            Game.Player.Character.Style.SetDefaultClothes();
-            Debug.WriteLine("Changed clothes");
-            /*while (!HasModelLoaded((uint)sp.Model))
-            {
-                //RequestModel((uint)sp.Model);
-                Thread.Sleep(10);
-            }
-            Debug.WriteLine("model loaded: {0}", sp.Model);*/
-
-            //Game.Player.Character.Style.SetDefaultClothes();
-
+            // TODO: freeze player
             int pid = PlayerId();
-            Debug.WriteLine("Got player id");
-            //SetPlayerModel(pid, (uint)sp.Model);
-            Debug.WriteLine("Player model set");
+            FreezePlayer(pid, true);
+            
+            // change the player model
+            Model m = new Model(sp.Model);
+            await Game.Player.ChangeModel(m);
+            Game.Player.Character.Style.SetDefaultClothes();
+            
 
-            // release the player model
-            //SetModelAsNoLongerNeeded((uint)sp.Model);
-            //Debug.WriteLine("Released model");
+            // TODO: Set model as not used ?
 
             RequestCollisionAtCoord((float)sp.X, (float)sp.Y, (float)sp.Z);
-            Debug.WriteLine("Requested collisions model");
-
+            
             // ResurrectNetworkPlayer(GetPlayerId(), spawn.x, spawn.y, spawn.z, spawn.heading)
             int ped = GetPlayerPed(-1);
-            Debug.WriteLine("Got player ped");
-
+            
             // V requires setting coords as well
             SetEntityCoordsNoOffset(ped, (float)sp.X, (float)sp.Y, (float)sp.Z, false, false, false); //, true);
-            Debug.WriteLine("SetEntityCoordsNoOffset");
-            NetworkResurrectLocalPlayer((float)sp.X, (float)sp.Y, (float)sp.Z, (float)sp.Heading, true, true); //, false);
-            Debug.WriteLine("NetworkResurrectLocalPlayer");
+            NetworkResurrectLocalPlayer((float)sp.X, (float)sp.Y, (float)sp.Z, (float)sp.Heading, true, true); //, false);;
 
             ClearPedTasksImmediately(ped);
-            Debug.WriteLine("ClearPedTasksImmediately");
             RemoveAllPedWeapons(ped, true);
-            Debug.WriteLine("RemoveAllPedWeapons");
             ClearPlayerWantedLevel(pid);
-            Debug.WriteLine("ClearPlayerWantedLevel");
 
             while (!HasCollisionLoadedAroundEntity(ped))
             {
                 await BaseScript.Delay(10);
             }
-            Debug.WriteLine("HasCollisionLoadedAroundEntity");
 
             ShutdownLoadingScreen();
-            Debug.WriteLine("ShutdownLoadingScreen");
             DoScreenFadeIn(500);
-            Debug.WriteLine("DoScreenFadeIn");
-
-            //while (IsScreenFadingIn())
-            //{
-            //    Thread.Sleep(10);
-            //}
+            
             while (Screen.Fading.IsFadingIn)
             {
                 await BaseScript.Delay(100);
             }
-            Debug.WriteLine("Screen faded in");
 
-            // unfreeze player
+            // TODO: unfreeze player
+            FreezePlayer(pid, false);
+
             BaseScript.TriggerServerEvent("playerSpawned", sp);
 
             spawnLock = false;

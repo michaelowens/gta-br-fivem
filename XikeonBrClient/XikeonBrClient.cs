@@ -26,6 +26,7 @@ namespace XikeonBrClient
             EventHandlers.Add("xbr:showNotificationDetails", new Action<string, string, string, string>(Notification.OnNotificationDetails));
             EventHandlers.Add("xbr:showNotificationDetailsPlayer", new Action<ExpandoObject, string, string, string, string>(Notification.OnNotificationDetails));
             EventHandlers.Add("xbr:setTime", new Action<int, int, int>(OnSetTime));
+            EventHandlers.Add("xbr:freezePlayer", new Action<int, bool>(OnFreezePlayer));
             EventHandlers.Add("getMapDirectives", new Action<CallbackDelegate>(SpawnManager.OnGetMapDirectives));
         }
 
@@ -51,6 +52,11 @@ namespace XikeonBrClient
         private void OnSetTime(int h, int m, int s)
         {
             XikeonBrShared.Time.Set(h, m, s);
+        }
+
+        private void OnFreezePlayer(int player, bool freeze)
+        {
+            SpawnManager.FreezePlayer(player, freeze);
         }
 
         private void OnPlayerSpawned([FromSource]Player player, System.Object playerName, CallbackDelegate kickReason)

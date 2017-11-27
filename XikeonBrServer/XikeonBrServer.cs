@@ -69,6 +69,17 @@ namespace XikeonBrServer
                     BaseScript.TriggerClientEvent("xbr:setTime", XikeonBrShared.Time.h, XikeonBrShared.Time.m, XikeonBrShared.Time.s);
                     CancelEvent();
                     break;
+                case "freeze":
+                    bool freeze = true;
+                    if (args.Count > 1)
+                    {
+                        freeze = Convert.ToBoolean(args[1]);
+                    }
+
+                    Debug.WriteLine("Freezing Player: {0} - {1}", args[0], GetPlayerName(args[0]));
+                    BaseScript.TriggerClientEvent("xbr:freezePlayer", args[0], freeze);
+                    CancelEvent();
+                    break;
                 default:
                     break;
             }
