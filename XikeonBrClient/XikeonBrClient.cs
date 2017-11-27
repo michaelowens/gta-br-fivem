@@ -68,6 +68,26 @@ namespace XikeonBrClient
             }
 
             playerInLobby = true;
+            
+            // Parachute
+            Debug.WriteLine("Give parachute...");
+            int ped = GetPlayerPed(PlayerId());
+            uint item = (uint)GetHashKey("gadget_parachute");
+
+            GiveWeaponToPed(ped, item, 1, false, true);
+
+            // Spawn test weapon
+            Debug.WriteLine("Spawn test weapon...");
+            string weapon = "PICKUP_WEAPON_SNIPERRIFLE";
+            int hk = GetHashKey(weapon);
+            Vector3 pos = GetEntityCoords(ped, true);
+            //int p = CreatePortablePickup((uint)hk, pos.X, pos.Y + 5f, 33f, true, (uint)hk);
+            //FreezeEntityPosition(p, true);
+            CreatePickup((uint)hk, pos.X, pos.Y + 5f, 33f, 8, 100, false, (uint)hk); // 8 = ON GROUND
+            CreatePickup((uint)hk, pos.X, pos.Y + 3f, 33f, 512, 100, false, (uint)hk); // 512 = SPIN AROUND
+            //SetEntityHasGravity(p, true);
+            //CreatePickupWithAmmo()
+
             //NetworkOverrideClockTime(12, 0, 0);
         }
     }

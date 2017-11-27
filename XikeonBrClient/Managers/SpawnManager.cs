@@ -222,6 +222,7 @@ namespace XikeonBrClient.Managers
             // TODO: unfreeze player
             FreezePlayer(pid, false);
 
+            BaseScript.TriggerEvent("playerSpawned", sp);
             BaseScript.TriggerServerEvent("playerSpawned", sp);
 
             spawnLock = false;
