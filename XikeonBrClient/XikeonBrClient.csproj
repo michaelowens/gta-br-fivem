@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Crouch.cs" />
+    <Compile Include="Managers\InventoryManager.cs" />
     <Compile Include="Managers\SpawnManager.cs" />
     <Compile Include="Models\SpawnPoint.cs" />
     <Compile Include="Notification.cs" />

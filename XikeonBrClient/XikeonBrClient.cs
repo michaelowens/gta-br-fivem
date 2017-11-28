@@ -19,6 +19,7 @@ namespace XikeonBrClient
 
         SpawnManager spawnManager;
         BaseEvents baseEvents;
+        InventoryManager inventoryManager;
 
         public XikeonBrClient()
         {
@@ -26,10 +27,14 @@ namespace XikeonBrClient
 
             baseEvents = new BaseEvents();
             Tick += baseEvents.OnTick;
+            Tick += baseEvents.CountDownTick;
 
             spawnManager = new SpawnManager();
             Tick += spawnManager.OnTick;
             EventHandlers.Add("getMapDirectives", new Action<CallbackDelegate>(spawnManager.OnGetMapDirectives));
+
+            inventoryManager = new InventoryManager();
+            Tick += inventoryManager.OnTick;
 
             Tick += OnTick;
             EventHandlers.Add("onClientMapStart", new Action<string>(OnClientMapStart));

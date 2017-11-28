@@ -20,6 +20,7 @@ namespace XikeonBrClient.System
         public int DiedAt = -1;
         private bool Restarting = false;
         private bool RanDeathAnimation = false;
+        private int Countdown = 10;
 
         public BaseEvents() {
             Debug.WriteLine("LOADED BASE_EVENTS");
@@ -35,7 +36,14 @@ namespace XikeonBrClient.System
                 float height = 120;
                 //DrawRect(x - (width / 2), y - (height / 2), width, height, 255, 0, 0, 255);
 
-                Rectangle rect = new Rectangle(new PointF(x - (width / 2), y - (height / 2)), new SizeF(width, height), Color.FromArgb(175, 0, 0 ,0));
+                Scaleform buttons2 = new Scaleform("mp_big_message_freemode");
+                //buttons2.CallFunction("CLEAR_ALL");
+                //buttons2.CallFunction("UPDATE_MESSAGE", "Hello ~INPUT_RELOAD~");
+                buttons2.CallFunction("SHOW_SHARD_WASTED_MP_MESSAGE", "~r~You died!", "Better luck next time");
+                buttons2.CallFunction("ROLL_UP_BACKGROUND");
+                buttons2.Render2D();
+
+                /*Rectangle rect = new Rectangle(new PointF(x - (width / 2), y - (height / 2)), new SizeF(width, height), Color.FromArgb(175, 0, 0, 0));
                 rect.Draw();
 
                 Text text = new Text("You died!", new PointF(x, rect.Position.Y + 15f), 1.0f);
@@ -50,11 +58,11 @@ namespace XikeonBrClient.System
                 Text restartText = new Text(string.Format("Press {0} to restart!", btn), new PointF(x, rect.Position.Y + height - 50f), .5f);
                 restartText.Alignment = Alignment.Center;
                 restartText.WrapWidth = width;
-                restartText.Draw();
+                restartText.Draw();*/
 
                 Scaleform buttons = new Scaleform("instructional_buttons");
                 buttons.CallFunction("CLEAR_ALL");
-                buttons.CallFunction("TOGGLE_MOUSE_BUTTONS", 0);
+                buttons.CallFunction("TOGGLE_MOUSE_BUTTONS", 1);
                 buttons.CallFunction("CREATE_CONTAINER");
                 buttons.CallFunction("SET_DATA_SLOT", 0, Function.Call<string>((Hash)0x0499D7B09FC9B407, 2, (int)Control.Reload, 0), "Restart");
                 buttons.CallFunction("DRAW_INSTRUCTIONAL_BUTTONS", 1);
@@ -65,10 +73,25 @@ namespace XikeonBrClient.System
 
                 if (!RanDeathAnimation && PlayerSpawned)
                 {
+
+                    Scaleform minimap = new Scaleform("minimap");
+                    minimap.Render2D();
                     Debug.WriteLine("DEATH FAIL OUT");
                     RanDeathAnimation = true;
                     Screen.Effects.Start(ScreenEffect.DeathFailOut, 0, true);
                 }
+            } else
+            {
+                Debug.WriteLine("SHOW COUNTDOWNNNN");
+                Scaleform countdown = new Scaleform("countdown");
+                string strCountdown = "GO";
+                if (Countdown > 0)
+                {
+                    strCountdown = Countdown.ToString();
+                }
+                countdown.CallFunction("SET_MESSAGE", strCountdown, 255, 0, 0, 1);
+                //countdown.CallFunction("IS_COUNTDOWN_VISIBLE", 1);
+                countdown.Render2D();
             }
         }
 
@@ -179,6 +202,15 @@ namespace XikeonBrClient.System
             }
 
             return -1;
+        }
+
+        public async Task CountDownTick()
+        {
+            if (Countdown > 0)
+            {
+                Countdown--;
+                await BaseScript.Delay(1000);
+            }
         }
     }
 }
