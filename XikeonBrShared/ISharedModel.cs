@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,23 +11,15 @@ namespace XikeonBrShared
 {
     public class ISharedModel : INotifyPropertyChanged
     {
-        //public Action<Object, PropertyChangedEventArgs> PropertyChangeCallback;
-
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged(PropertyChangedEventArgs e)
+        public void SetWithoutSync(string fieldName, Type type, dynamic value, Action<dynamic> cb)
         {
-            PropertyChanged?.Invoke(this, e);
-        }
+            PropertyInfo prop = GetType().GetProperties().Where(p => p.Name == fieldName).First();
 
-        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
-        }
-
-        public ISharedModel ()
-        {
-            //PropertyChanged += new PropertyChangedEventHandler(OnPropertyChange);
+            cb(type);
+            
+            prop.SetValue(this, Convert.ChangeType(value, type), null);
         }
     }
 }

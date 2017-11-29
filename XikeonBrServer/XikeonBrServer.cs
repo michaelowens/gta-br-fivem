@@ -24,7 +24,8 @@ namespace XikeonBrServer
 
         private void OnSyncPropertyChange(Object sender, PropertyChangedEventArgs e)
         {
-            Debug.WriteLine("Shared.Sync: property changed: {0}", e.PropertyName);
+            Debug.WriteLine("[Server] Shared.Sync: property changed: {0} - {1}", e.PropertyName, sender.GetType().GetProperty(e.PropertyName).GetValue(sender));
+            BaseScript.TriggerClientEvent("xbr:sync", sender.ToString(), e.PropertyName, sender.GetType().GetProperty(e.PropertyName).GetValue(sender));
         }
 
         private void OnPlayerConnecting(string playerName, CallbackDelegate kickReason)
@@ -88,7 +89,7 @@ namespace XikeonBrServer
                     sync.status.Countdown = countdownSeconds;
                     sync.status.ShowCountdown = true;
                     Debug.WriteLine("Countdown from {0}", countdownSeconds);
-                    BaseScript.TriggerClientEvent("xbr:countdown", countdownSeconds);
+                    //BaseScript.TriggerClientEvent("xbr:countdown", countdownSeconds);
                     CancelEvent();
                     break;
                 case "freeze":

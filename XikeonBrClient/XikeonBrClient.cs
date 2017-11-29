@@ -9,6 +9,7 @@ using System.Dynamic;
 using XikeonBrClient.Managers;
 using CitizenFX.Core.UI;
 using XikeonBrClient.System;
+using System.ComponentModel;
 
 namespace XikeonBrClient
 {
@@ -20,10 +21,14 @@ namespace XikeonBrClient
         SpawnManager spawnManager;
         BaseEvents baseEvents;
         InventoryManager inventoryManager;
+        XikeonBrShared.Sync sync;
 
         public XikeonBrClient()
         {
             Debug.WriteLine("XikeonBrClient initialized");
+
+            sync = new XikeonBrShared.Sync(OnSyncPropertyChange);
+            sync.Notify = OnSyncNotify;
 
             baseEvents = new BaseEvents();
             Tick += baseEvents.OnTick;
@@ -47,7 +52,19 @@ namespace XikeonBrClient
             EventHandlers.Add("xbr:freezePlayer", new Action<int, bool>(OnFreezePlayer));
             EventHandlers.Add("xbr:playerRestart", new Action(OnPlayerRestart));
             EventHandlers.Add("xbr:countdown", new Action<int>(OnCountdown));
+            EventHandlers.Add("xbr:sync", new Action<string, string, dynamic>(sync.HandleSyncEvent));
             // EventHandlers.Add("xbr:onPlayerDied", new Action<int, double, double, double>(OnPlayerDied));
+        }
+
+        private void OnSyncNotify(string format, object args)
+        {
+            Debug.WriteLine(format, args);
+        }
+
+        private void OnSyncPropertyChange(Object sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine("[Server] Shared.Sync: property changed: {0} - {1}", e.PropertyName, sender.GetType().GetProperty(e.PropertyName).GetValue(sender));
+            BaseScript.TriggerServerEvent("xbr:sync", sender.ToString(), e.PropertyName, sender.GetType().GetProperty(e.PropertyName).GetValue(sender));
         }
 
         private void OnClientMapStart(string resourceName)

@@ -29,7 +29,7 @@ namespace XikeonBrClient.Managers
             int ray = StartShapeTestCapsule(pos.X, pos.Y, pos.Z, pos.X, pos.Y, pos.Z, 10f, -1, ped, 7);
             GetShapeTestResult(ray, ref hit, ref endCoords, ref surfaceNormal, ref entityHit);
 
-            Debug.WriteLine("Got inventory scan hit: {0} - Type:{1}", entityHit, GetEntityType(entityHit));
+            //Debug.WriteLine("Got inventory scan hit: {0} - Type:{1}", entityHit, GetEntityType(entityHit));
         }
     }
 }
