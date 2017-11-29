@@ -3,12 +3,14 @@ using CitizenFX.Core;
 using static CitizenFX.Core.Native.API;
 using CitizenFX.Core.Native;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace XikeonBrServer
 {
     public class XikeonBrServer : BaseScript
     {
         public static string Motd = "Welcome to the server!";
+        public XikeonBrShared.Sync sync;
 
         public XikeonBrServer()
         {
@@ -16,12 +18,19 @@ namespace XikeonBrServer
             EventHandlers.Add("playerConnecting", new Action<string, CallbackDelegate>(OnPlayerConnecting));
             EventHandlers.Add("xbr:playerFirstSpawned", new Action<Player>(OnPlayerFirstSpawned));
             EventHandlers.Add("rconCommand", new Action<string, List<dynamic>>(OnRconCommand));
+
+            sync = new XikeonBrShared.Sync(OnSyncPropertyChange);
+        }
+
+        private void OnSyncPropertyChange(Object sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine("Shared.Sync: property changed: {0}", e.PropertyName);
         }
 
         private void OnPlayerConnecting(string playerName, CallbackDelegate kickReason)
         {
             // if gameStarted then kick
-            if (XikeonBrShared.Status.gameStarted)
+            if (sync.status.GameStarted)
             {
                 Debug.WriteLine("Game in progress... Kicking player: {0}", playerName);
                 kickReason("Game in progress... Try again later.");
@@ -55,18 +64,31 @@ namespace XikeonBrServer
                     break;
                 case "start_game":
                     Debug.WriteLine($"Starting game");
-                    XikeonBrShared.Status.gameStarted = true;
+                    sync.status.GameStarted = true;
                     CancelEvent();
                     break;
                 case "stop_game":
                     Debug.WriteLine($"Stopping game");
-                    XikeonBrShared.Status.gameStarted = false;
+                    sync.status.GameStarted = false;
                     CancelEvent();
                     break;
                 case "time":
                     Debug.WriteLine("Setting time to {0}:{1}:{2}", args[0], args[1], args[2]);
                     XikeonBrShared.Time.Set(Convert.ToInt32(args[0]), Convert.ToInt32(args[1]), Convert.ToInt32(args[2]));
                     BaseScript.TriggerClientEvent("xbr:setTime", XikeonBrShared.Time.h, XikeonBrShared.Time.m, XikeonBrShared.Time.s);
+                    CancelEvent();
+                    break;
+                case "countdown":
+                    int countdownSeconds = 10;
+                    if (args.Count > 0)
+                    {
+                        countdownSeconds = Convert.ToInt32(args[0]);
+                    }
+
+                    sync.status.Countdown = countdownSeconds;
+                    sync.status.ShowCountdown = true;
+                    Debug.WriteLine("Countdown from {0}", countdownSeconds);
+                    BaseScript.TriggerClientEvent("xbr:countdown", countdownSeconds);
                     CancelEvent();
                     break;
                 case "freeze":

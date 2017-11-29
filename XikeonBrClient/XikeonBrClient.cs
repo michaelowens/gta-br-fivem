@@ -46,6 +46,7 @@ namespace XikeonBrClient
             EventHandlers.Add("xbr:setTime", new Action<int, int, int>(OnSetTime));
             EventHandlers.Add("xbr:freezePlayer", new Action<int, bool>(OnFreezePlayer));
             EventHandlers.Add("xbr:playerRestart", new Action(OnPlayerRestart));
+            EventHandlers.Add("xbr:countdown", new Action<int>(OnCountdown));
             // EventHandlers.Add("xbr:onPlayerDied", new Action<int, double, double, double>(OnPlayerDied));
         }
 
@@ -82,6 +83,14 @@ namespace XikeonBrClient
         {
             Debug.WriteLine("restarting player");
             spawnManager.SpawnPlayer();
+        }
+
+        private void OnCountdown(int seconds)
+        {
+            Debug.WriteLine("Start countdown from {0}", seconds);
+            baseEvents.SetCountdown(seconds);
+            //XikeonBrShared.Status.countdown = seconds;
+            //XikeonBrShared.Status.showCountdown = true;
         }
 
         private void OnPlayerSpawned([FromSource]Player player, Object playerName, CallbackDelegate kickReason)

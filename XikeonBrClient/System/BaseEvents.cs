@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using CitizenFX.Core.UI;
 using XikeonBrClient.Managers;
 using CitizenFX.Core.Native;
+using System.ComponentModel;
 
 namespace XikeonBrClient.System
 {
@@ -20,10 +21,25 @@ namespace XikeonBrClient.System
         public int DiedAt = -1;
         private bool Restarting = false;
         private bool RanDeathAnimation = false;
-        private int Countdown = 10;
+        private XikeonBrShared.Sync sync;
+
+        Scaleform countdown = new Scaleform("countdown");
 
         public BaseEvents() {
+            sync = new XikeonBrShared.Sync(OnSyncPropertyChange);
+            countdown.CallFunction("OVERRIDE_FADE_DURATION", 500);
             Debug.WriteLine("LOADED BASE_EVENTS");
+        }
+
+        private void OnSyncPropertyChange(Object sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine("Client#Shared.Sync: property changed: {0}", e.PropertyName);
+        }
+
+        public void SetCountdown(int seconds)
+        {
+            sync.status.Countdown = seconds;
+            sync.status.ShowCountdown = true;
         }
 
         public void DrawDeadMessage()
@@ -40,7 +56,7 @@ namespace XikeonBrClient.System
                 //buttons2.CallFunction("CLEAR_ALL");
                 //buttons2.CallFunction("UPDATE_MESSAGE", "Hello ~INPUT_RELOAD~");
                 buttons2.CallFunction("SHOW_SHARD_WASTED_MP_MESSAGE", "~r~You died!", "Better luck next time");
-                buttons2.CallFunction("ROLL_UP_BACKGROUND");
+                //buttons2.CallFunction("ROLL_UP_BACKGROUND");
                 buttons2.Render2D();
 
                 /*Rectangle rect = new Rectangle(new PointF(x - (width / 2), y - (height / 2)), new SizeF(width, height), Color.FromArgb(175, 0, 0, 0));
@@ -62,7 +78,7 @@ namespace XikeonBrClient.System
 
                 Scaleform buttons = new Scaleform("instructional_buttons");
                 buttons.CallFunction("CLEAR_ALL");
-                buttons.CallFunction("TOGGLE_MOUSE_BUTTONS", 1);
+                buttons.CallFunction("TOGGLE_MOUSE_BUTTONS", 0);
                 buttons.CallFunction("CREATE_CONTAINER");
                 buttons.CallFunction("SET_DATA_SLOT", 0, Function.Call<string>((Hash)0x0499D7B09FC9B407, 2, (int)Control.Reload, 0), "Restart");
                 buttons.CallFunction("DRAW_INSTRUCTIONAL_BUTTONS", 1);
@@ -80,19 +96,18 @@ namespace XikeonBrClient.System
                     RanDeathAnimation = true;
                     Screen.Effects.Start(ScreenEffect.DeathFailOut, 0, true);
                 }
-            } else
-            {
-                Debug.WriteLine("SHOW COUNTDOWNNNN");
-                Scaleform countdown = new Scaleform("countdown");
-                string strCountdown = "GO";
-                if (Countdown > 0)
-                {
-                    strCountdown = Countdown.ToString();
-                }
-                countdown.CallFunction("SET_MESSAGE", strCountdown, 255, 0, 0, 1);
-                //countdown.CallFunction("IS_COUNTDOWN_VISIBLE", 1);
-                countdown.Render2D();
             }
+        }
+
+        public void DrawCountdown()
+        {
+            if (!sync.status.ShowCountdown)
+            {
+                return;
+            }
+            
+            countdown.CallFunction("SET_MESSAGE", sync.status.Countdown.ToString(), 255, 0, 0, 1);
+            countdown.Render2D();
         }
 
         public async Task OnTick()
@@ -174,6 +189,7 @@ namespace XikeonBrClient.System
                 }
             }
 
+            DrawCountdown();
             DrawDeadMessage();
 
             if (IsDead && !Restarting && IsControlPressed(0, (int)Control.Reload))
@@ -206,10 +222,16 @@ namespace XikeonBrClient.System
 
         public async Task CountDownTick()
         {
-            if (Countdown > 0)
+            if (sync.status.ShowCountdown)
             {
-                Countdown--;
-                await BaseScript.Delay(1000);
+                if (sync.status.Countdown > 0)
+                {
+                    await BaseScript.Delay(sync.status.Countdown == 1 ? 2000 : 1000);
+                    sync.status.Countdown--;
+                } else
+                {
+                    sync.status.ShowCountdown = false;
+                }
             }
         }
     }

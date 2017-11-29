@@ -40,7 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISharedModel.cs" />
     <Compile Include="Status.cs" />
+    <Compile Include="Sync.cs" />
     <Compile Include="Time.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="XikeonBrShared.cs" />

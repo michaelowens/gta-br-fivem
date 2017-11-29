@@ -49,6 +49,7 @@
     <Compile Include="Models\SpawnPoint.cs" />
     <Compile Include="Notification.cs" />
     <Compile Include="System\BaseEvents.cs" />
+    <Compile Include="System\Sync.cs" />
     <Compile Include="XikeonBrClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
